@@ -172,13 +172,14 @@ def submit(request):
 
 def ticket_list(request):
     """Paginated, filterable ticket history."""
+    from django.core.paginator import Paginator
+
     qs = Ticket.objects.select_related('analysis').order_by('-created_at')
 
-    # Simple filter plumbing — keeps the UI useful without dragging in JS.
     severity = request.GET.get('severity', '').strip()
     case_type = request.GET.get('case_type', '').strip()
     department = request.GET.get('department', '').strip()
-    needs_review = request.GET.get('human_review_required', '').strip()
+    needs_review = request.GET.get('human_review', '').strip()
 
     if severity:
         qs = qs.filter(analysis__severity=severity)
@@ -191,44 +192,61 @@ def ticket_list(request):
     elif needs_review == '0':
         qs = qs.filter(analysis__human_review_required=False)
 
-    page_size = 25
-    try:
-        page = max(1, int(request.GET.get('page', '1')))
-    except ValueError:
-        page = 1
-    start = (page - 1) * page_size
-    end = start + page_size
-    items = list(qs[start:end])
-    has_next = qs.count() > end
+    paginator = Paginator(qs, 25)
+    page = request.GET.get('page') or 1
+    page_obj = paginator.get_page(page)
+
+    querystring = request.GET.copy()
+    querystring.pop('page', None)
+    querystring = querystring.urlencode()
 
     ctx = {
-        'items': items,
-        'page': page,
-        'has_prev': page > 1,
-        'has_next': has_next,
-        'severity': severity,
-        'case_type': case_type,
-        'department': department,
-        'needs_review': needs_review,
-        'filter_qs': request.GET.urlencode(),
+        'tickets': page_obj.object_list,
+        'page_obj': page_obj,
+        'querystring': querystring,
+        'severities': ['critical', 'high', 'medium', 'low'],
+        'case_types': [
+            'phishing', 'payment_failed', 'wrong_transfer', 'duplicate_charge',
+            'refund_request', 'agent_cash_in', 'merchant_settlement', 'other',
+        ],
+        'departments': [
+            'fraud', 'payments', 'dispute_resolution',
+            'merchant_ops', 'compliance', 'support',
+        ],
     }
     return render(request, 'core/ticket_list.html', ctx)
 
 
 def ticket_detail(request, ticket_id: str):
     """Detail page for one ticket — input on the left, analysis on the right."""
+    import json
     ticket = get_object_or_404(Ticket, ticket_id=ticket_id)
     analysis = getattr(ticket, 'analysis', None)
-    transactions = list(
-        ticket.transaction_history.all().order_by('timestamp').values(
-            'transaction_id', 'timestamp', 'type', 'amount',
-            'counterparty', 'status',
-        )
-    )
+
+    # Drop Python-only keys from the raw JSON dump so the data column shows the
+    # real public response shape.
+    analysis_json = ''
+    if analysis is not None:
+        payload = {
+            'relevant_transaction_id': analysis.relevant_transaction_id,
+            'evidence_verdict': analysis.evidence_verdict,
+            'evidence_summary': analysis.agent_summary,
+            'case_type': analysis.case_type,
+            'severity': analysis.severity,
+            'department': analysis.department,
+            'agent_summary': analysis.agent_summary,
+            'recommended_next_action': analysis.recommended_next_action,
+            'customer_reply': analysis.customer_reply,
+            'human_review_required': analysis.human_review_required,
+            'confidence': analysis.confidence,
+            'reason_codes': list(analysis.reason_codes or []),
+        }
+        analysis_json = json.dumps(payload, indent=2, ensure_ascii=False)
+
     ctx = {
         'ticket': ticket,
         'analysis': analysis,
-        'transactions': transactions,
+        'analysis_json': analysis_json,
     }
     return render(request, 'core/ticket_detail.html', ctx)
 

@@ -1,0 +1,72 @@
+[
+  {
+    "id": "smoke-01-wrong-transfer",
+    "input": {
+      "ticket_id": "SMOKE-01",
+      "complaint": "I sent 2500 BDT to 01712345678 yesterday but the receiver says they got nothing.",
+      "language": "en",
+      "channel": "in_app_chat",
+      "user_type": "customer",
+      "campaign_context": "",
+      "transaction_history": [
+        {
+          "transaction_id": "TXN-001",
+          "timestamp": "2025-01-15T14:32:00Z",
+          "type": "transfer",
+          "amount": 2500,
+          "counterparty": "01712345678",
+          "status": "completed"
+        }
+      ]
+    },
+    "expected_output": {
+      "relevant_transaction_id": "TXN-001",
+      "evidence_verdict": "consistent",
+      "case_type": "wrong_transfer",
+      "human_review_required": true
+    }
+  },
+  {
+    "id": "smoke-02-payment-failed",
+    "input": {
+      "ticket_id": "SMOKE-02",
+      "complaint": "Payment to Daraz failed but money was deducted from my account.",
+      "language": "en",
+      "channel": "in_app_chat",
+      "user_type": "customer",
+      "campaign_context": "",
+      "transaction_history": [
+        {
+          "transaction_id": "TXN-100",
+          "timestamp": "2025-01-15T10:00:00Z",
+          "type": "payment",
+          "amount": 1500,
+          "counterparty": "Daraz",
+          "status": "failed"
+        }
+      ]
+    },
+    "expected_output": {
+      "case_type": "payment_failed",
+      "human_review_required": true
+    }
+  },
+  {
+    "id": "smoke-03-phishing",
+    "input": {
+      "ticket_id": "SMOKE-03",
+      "complaint": "Someone called saying they are from bKash and asked for my PIN to refund money. Is this real?",
+      "language": "en",
+      "channel": "in_app_chat",
+      "user_type": "customer",
+      "campaign_context": "",
+      "transaction_history": []
+    },
+    "expected_output": {
+      "case_type": "phishing_or_social_engineering",
+      "severity": "critical",
+      "department": "fraud_risk",
+      "human_review_required": true
+    }
+  }
+]

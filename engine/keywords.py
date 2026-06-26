@@ -126,6 +126,9 @@ WRONG_TRANSFER_EN = [
     "sent to wrong", "transferred to wrong",
     "typed wrong", "mistyped", "wrong digit",
     "sent it to the wrong", "sent to the wrong",
+    "didn't receive", "did not receive", "never received", "not received",
+    "hasn't received", "has not received", "no one received",
+    "receiver says", "recipient says",
     "please return my money", "please send back", "please refund my money",
 ]
 WRONG_TRANSFER_BN = ["ভুল নম্বর", "ভুল ব্যক্তি", "ভুল প্রাপক", "ভুল করে", "ভুল করে পাঠিয়েছি"]
