@@ -94,7 +94,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # Allow the SQLite path to be overridden by env (useful for Docker volumes
+        # or when running the validator against a throwaway DB).
+        'NAME': os.environ.get('DJANGO_SQLITE_PATH') or str(BASE_DIR / 'db.sqlite3'),
     }
 }
 

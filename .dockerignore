@@ -1,0 +1,19 @@
+# Files not needed inside the image.
+.git/
+.gitignore
+.env
+.env.local
+.env.production
+*.md
+!README.md
+!RUNBOOK.md
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.sqlite3
+data/
+node_modules/
+.idea/
+.vscode/
+.DS_Store

@@ -1,0 +1,113 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Submit · QueueStorm{% endblock %}
+{% block heading %}Submit a ticket{% endblock %}
+{% block sub %}/submit{% endblock %}
+
+{% block content %}
+<form id="ticket-form" class="card" autocomplete="off">
+  <div class="row">
+    <div class="field col">
+      <label for="id_ticket_id">Ticket ID</label>
+      <input type="text" id="id_ticket_id" name="ticket_id" required />
+    </div>
+    <div class="field col">
+      <label for="id_language">Language</label>
+      <select id="id_language" name="language">
+        <option value="en" selected>English</option>
+        <option value="bn">Bangla</option>
+        <option value="mixed">Mixed / Banglish</option>
+      </select>
+    </div>
+    <div class="field col">
+      <label for="id_channel">Channel</label>
+      <select id="id_channel" name="channel">
+        <option value="">—</option>
+        <option value="in_app_chat">in_app_chat</option>
+        <option value="call_center">call_center</option>
+        <option value="email">email</option>
+        <option value="merchant_portal">merchant_portal</option>
+        <option value="field_agent">field_agent</option>
+      </select>
+    </div>
+    <div class="field col">
+      <label for="id_user_type">User type</label>
+      <select id="id_user_type" name="user_type">
+        <option value="customer" selected>customer</option>
+        <option value="merchant">merchant</option>
+        <option value="agent">agent</option>
+        <option value="unknown">unknown</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="id_complaint">Complaint</label>
+    <textarea id="id_complaint" name="complaint" required placeholder="Describe the issue…"></textarea>
+  </div>
+
+  <div class="field">
+    <label for="id_campaign_context">Campaign context (optional)</label>
+    <input type="text" id="id_campaign_context" name="campaign_context" />
+  </div>
+
+  <h3>Transaction history</h3>
+  <p class="muted small" style="margin-top:0">Add the customer's recent transactions here. The engine matches the complaint against this list.</p>
+
+  <table id="tx-table" class="qs-table mono">
+    <thead>
+      <tr>
+        <th>transaction_id</th>
+        <th>timestamp</th>
+        <th>type</th>
+        <th>amount</th>
+        <th>counterparty</th>
+        <th>status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="text"   name="transactions-0-transaction_id" placeholder="TXN-001" /></td>
+        <td><input type="datetime-local" name="transactions-0-timestamp" /></td>
+        <td>
+          <select name="transactions-0-type">
+            <option value="transfer">transfer</option>
+            <option value="payment">payment</option>
+            <option value="cash_in">cash_in</option>
+            <option value="cash_out">cash_out</option>
+            <option value="settlement">settlement</option>
+            <option value="refund">refund</option>
+          </select>
+        </td>
+        <td><input type="number" step="0.01" name="transactions-0-amount" placeholder="0.00" /></td>
+        <td><input type="text"   name="transactions-0-counterparty" placeholder="phone or merchant" /></td>
+        <td>
+          <select name="transactions-0-status">
+            <option value="completed">completed</option>
+            <option value="failed">failed</option>
+            <option value="pending">pending</option>
+            <option value="reversed">reversed</option>
+          </select>
+        </td>
+        <td><button type="button" class="btn ghost tx-remove">×</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top:8px">
+    <button type="button" id="tx-add" class="btn ghost">+ Add transaction</button>
+  </div>
+
+  <div style="margin-top:24px">
+    <button type="submit" class="btn primary">Analyze ticket</button>
+    <a href="{% url 'core:dashboard' %}" class="btn">Cancel</a>
+  </div>
+</form>
+
+<div id="result"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% load static %}{% static 'core/js/app.js' %}"></script>
+{% endblock %}

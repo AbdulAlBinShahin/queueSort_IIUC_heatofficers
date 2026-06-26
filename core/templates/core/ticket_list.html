@@ -1,0 +1,92 @@
+{% extends 'core/base.html' %}
+
+{% block title %}History · QueueStorm{% endblock %}
+{% block heading %}Ticket history{% endblock %}
+{% block sub %}/tickets{% endblock %}
+
+{% block content %}
+<form method="get" class="filters card">
+  <div class="row">
+    <div class="field col">
+      <label for="f_severity">Severity</label>
+      <select id="f_severity" name="severity">
+        <option value="">Any</option>
+        {% for s in severities %}
+          <option value="{{ s }}" {% if request.GET.severity == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field col">
+      <label for="f_case">Case type</label>
+      <select id="f_case" name="case_type">
+        <option value="">Any</option>
+        {% for c in case_types %}
+          <option value="{{ c }}" {% if request.GET.case_type == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field col">
+      <label for="f_dept">Department</label>
+      <select id="f_dept" name="department">
+        <option value="">Any</option>
+        {% for d in departments %}
+          <option value="{{ d }}" {% if request.GET.department == d %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field col">
+      <label for="f_review">Human review</label>
+      <select id="f_review" name="human_review">
+        <option value="">Any</option>
+        <option value="1" {% if request.GET.human_review == '1' %}selected{% endif %}>Required</option>
+        <option value="0" {% if request.GET.human_review == '0' %}selected{% endif %}>Not required</option>
+      </select>
+    </div>
+    <div class="field col" style="align-self:end">
+      <button class="btn primary" type="submit">Apply</button>
+      <a class="btn" href="{% url 'core:ticket-list' %}">Reset</a>
+    </div>
+  </div>
+</form>
+
+<table class="qs-table mono">
+  <thead>
+    <tr>
+      <th>Ticket</th>
+      <th>Created</th>
+      <th>Case type</th>
+      <th>Severity</th>
+      <th>Verdict</th>
+      <th>Department</th>
+      <th>Review</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in tickets %}
+      <tr>
+        <td><a href="{% url 'core:ticket-detail' t.ticket_id %}">{{ t.ticket_id }}</a></td>
+        <td>{{ t.created_at|date:"Y-m-d H:i" }}</td>
+        <td>{{ t.analysis.case_type|default:"—" }}</td>
+        <td><span class="badge sev-{{ t.analysis.severity|default:'low' }}">{{ t.analysis.severity|default:"—" }}</span></td>
+        <td><span class="dot v-{{ t.analysis.evidence_verdict|default:'insufficient_data' }}"></span> {{ t.analysis.evidence_verdict|default:"—" }}</td>
+        <td>{{ t.analysis.department|default:"—" }}</td>
+        <td>{% if t.analysis.human_review_required %}✓{% else %}—{% endif %}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7" class="muted">No tickets match these filters.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if page_obj.has_other_pages %}
+  <div class="pager">
+    {% if page_obj.has_previous %}
+      <a class="btn" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}">← Prev</a>
+    {% endif %}
+    <span class="muted small">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+      <a class="btn" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}">Next →</a>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard · QueueStorm{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+{% block sub %}/dashboard{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <h1>QueueStorm Investigator</h1>
+  <p>An internal AI copilot that investigates customer complaints against their transaction history, classifies the case, routes it to the right team, and drafts a safe reply.</p>
+</div>
+
+<div class="stats">
+  <div class="stat">
+    <div class="label">Total tickets</div>
+    <div class="value">{{ total }}</div>
+  </div>
+  <div class="stat">
+    <div class="label">Pending human review</div>
+    <div class="value">{{ pending_review }}</div>
+  </div>
+  <div class="stat">
+    <div class="label">Today</div>
+    <div class="value">{{ today }}</div>
+  </div>
+  <div class="stat">
+    <div class="label">Critical severity</div>
+    <div class="value">{{ critical }}</div>
+  </div>
+</div>
+
+<h2>Quick start</h2>
+<div class="row">
+  <div class="card col">
+    <h3>1 · Submit a ticket</h3>
+    <p class="muted small">Paste a complaint and an optional transaction history. The engine returns a verdict, classification, severity, department, and a safe customer reply.</p>
+    <a href="{% url 'core:submit' %}" class="btn primary">Open submit form →</a>
+  </div>
+  <div class="card col">
+    <h3>2 · Browse history</h3>
+    <p class="muted small">Filter past tickets by severity, case type, department, or human-review flag.</p>
+    <a href="{% url 'core:ticket-list' %}" class="btn">Ticket history →</a>
+  </div>
+  <div class="card col">
+    <h3>3 · Integrate the API</h3>
+    <p class="muted small">Two endpoints: <span class="mono">GET /health</span> and <span class="mono">POST /analyze-ticket</span>. Synthetic data only.</p>
+    <a href="{% url 'core:api-docs' %}" class="btn">API docs →</a>
+  </div>
+</div>
+
+<h2>How the engine reasons</h2>
+<div class="card">
+  <ol style="margin:0;padding-left:18px;">
+    <li><b>Match</b> the complaint to a transaction (amount, time, type, counterparty, status).</li>
+    <li><b>Render</b> an evidence verdict: <span class="mono">consistent</span>, <span class="mono">inconsistent</span>, or <span class="mono">insufficient_data</span>.</li>
+    <li><b>Classify</b> case type using priority-ordered English + Bangla keyword rules.</li>
+    <li><b>Score severity</b> from case type and amount.</li>
+    <li><b>Route</b> to one of six internal departments.</li>
+    <li><b>Draft</b> agent summary, next action, and customer reply with safety guardrails.</li>
+    <li><b>Escalate</b> to human review whenever the case is risky or unclear.</li>
+  </ol>
+</div>
+{% endblock %}

@@ -46,11 +46,16 @@ def detect_injection(text: str) -> bool:
 # ---------------------------------------------------------------------------
 
 # Patterns that would make a customer reply unsafe.
+# Each pattern is anchored to a *request* verb so we don't false-positive on
+# advice telling users *not* to share credentials ("do not share your PIN").
 BANNED_PHRASES = [
-    re.compile(r'\bsend\s+(me|us)\s+your\s+(pin|otp|password|cvv)\b', re.I),
-    re.compile(r'\bshare\s+(your\s+)?(pin|otp|password|cvv)\b', re.I),
-    re.compile(r'\btell\s+(me|us)\s+your\s+(pin|otp|password|cvv)\b', re.I),
-    re.compile(r'\bprovide\s+(your\s+)?(pin|otp|password|cvv)\b', re.I),
+    # Imperatives that ask the customer to disclose credentials.
+    re.compile(r'\bsend\s+(me|us)\s+(your\s+)?(pin|otp|password|cvv)\b', re.I),
+    re.compile(r'\bshare\s+(your\s+)?(pin|otp|password|cvv)\s+with\s+(me|us)\b', re.I),
+    re.compile(r'\btell\s+(me|us)\s+(your\s+)?(pin|otp|password|cvv)\b', re.I),
+    re.compile(r'\bprovide\s+(me|us)\s+(your\s+)?(pin|otp|password|cvv)\b', re.I),
+    re.compile(r'\bgive\s+(me|us)\s+(your\s+)?(pin|otp|password|cvv)\b', re.I),
+    # Promises about money / account action we can't make.
     re.compile(r'\bwe\s+will\s+refund\b', re.I),
     re.compile(r'\bwe\s+will\s+reverse\b', re.I),
     re.compile(r'\bmoney\s+will\s+be\s+returned\b', re.I),

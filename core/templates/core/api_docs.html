@@ -1,0 +1,72 @@
+{% extends 'core/base.html' %}
+
+{% block title %}API - QueueStorm{% endblock %}
+{% block heading %}API reference{% endblock %}
+{% block sub %}/docs{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <h1>Two endpoints. JSON in, JSON out.</h1>
+  <p>Send the ticket payload. Get a structured analysis. No LLM. Synthetic data only.</p>
+</div>
+
+<h2>Health check</h2>
+<div class="card">
+  <p><span class="badge">GET</span> <span class="mono">/health</span></p>
+  <pre class="mono">$ curl http://localhost:8000/health
+{"status": "ok"}</pre>
+</div>
+
+<h2>Analyze a ticket</h2>
+<div class="card">
+  <p><span class="badge">POST</span> <span class="mono">/analyze-ticket</span></p>
+  <p>Validates the payload, runs the rule-based engine, persists the analysis, and returns a single structured JSON object.</p>
+
+  <h3>Request body</h3>
+  <pre class="mono">{
+  "ticket_id": "TKT-0001",
+  "complaint": "I sent 2500 BDT to 01712345678 yesterday but the receiver says they got nothing.",
+  "language": "en",
+  "channel": "in_app_chat",
+  "user_type": "customer",
+  "campaign_context": "",
+  "transactions": [
+    {
+      "transaction_id": "TXN-001",
+      "timestamp": "2025-01-15T14:32:00Z",
+      "type": "transfer",
+      "amount": 2500,
+      "counterparty": "01712345678",
+      "status": "completed"
+    }
+  ]
+}</pre>
+
+  <h3>Response fields</h3>
+  <ul>
+    <li><span class="mono">matched_transaction_id</span> - best-match transaction or null</li>
+    <li><span class="mono">evidence_verdict</span> - consistent | inconsistent | insufficient_data</li>
+    <li><span class="mono">evidence_summary</span> - one-sentence rationale</li>
+    <li><span class="mono">case_type</span> - phishing | payment_failed | wrong_transfer | duplicate_charge | refund_request | agent_cash_in | merchant_settlement | other</li>
+    <li><span class="mono">severity</span> - critical | high | medium | low</li>
+    <li><span class="mono">department</span> - fraud | payments | dispute_resolution | merchant_ops | compliance | support</li>
+    <li><span class="mono">agent_summary</span> - 1-2 sentence summary</li>
+    <li><span class="mono">recommended_next_action</span> - operational next step</li>
+    <li><span class="mono">customer_reply</span> - safe reply in the ticket language</li>
+    <li><span class="mono">human_review_required</span> - boolean</li>
+    <li><span class="mono">confidence</span> - 0.00-1.00</li>
+    <li><span class="mono">reason_codes</span> - list of short identifiers</li>
+  </ul>
+
+  <h3>Example call</h3>
+  <pre class="mono">$ curl -X POST http://localhost:8000/analyze-ticket \
+    -H "Content-Type: application/json" \
+    -d @sample.json</pre>
+
+  <h3>Errors</h3>
+  <ul>
+    <li><span class="mono">400</span> - validation error or prompt-injection attempt</li>
+    <li><span class="mono">500</span> - analysis failed (generic message; no stack trace)</li>
+  </ul>
+</div>
+{% endblock %}

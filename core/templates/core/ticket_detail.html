@@ -1,0 +1,113 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ ticket.ticket_id }} · QueueStorm{% endblock %}
+{% block heading %}{{ ticket.ticket_id }}{% endblock %}
+{% block sub %}created {{ ticket.created_at|date:"Y-m-d H:i" }}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col">
+    <div class="card">
+      <h3 style="margin-top:0">Complaint</h3>
+      <p style="white-space:pre-wrap">{{ ticket.complaint }}</p>
+      <hr />
+      <div class="meta-grid">
+        <div><span class="muted small">Language</span><div class="mono">{{ ticket.language }}</div></div>
+        <div><span class="muted small">Channel</span><div class="mono">{{ ticket.channel|default:"—" }}</div></div>
+        <div><span class="muted small">User type</span><div class="mono">{{ ticket.user_type }}</div></div>
+        <div><span class="muted small">Campaign</span><div class="mono">{{ ticket.campaign_context|default:"—" }}</div></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3 style="margin-top:0">Transaction history</h3>
+      <table class="qs-table mono">
+        <thead>
+          <tr>
+            <th>id</th><th>timestamp</th><th>type</th><th>amount</th><th>counterparty</th><th>status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for tx in ticket.transactions.all %}
+            <tr class="{% if ticket.analysis.relevant_transaction_id == tx.transaction_id %}hl{% endif %}">
+              <td>{{ tx.transaction_id }}</td>
+              <td>{{ tx.timestamp|date:"Y-m-d H:i" }}</td>
+              <td>{{ tx.type }}</td>
+              <td>{{ tx.amount }}</td>
+              <td>{{ tx.counterparty|default:"—" }}</td>
+              <td>{{ tx.status }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6" class="muted">No transactions recorded.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card verdict v-{{ ticket.analysis.evidence_verdict }}">
+      <h3 style="margin-top:0">Evidence verdict</h3>
+      <div class="big mono">{{ ticket.analysis.evidence_verdict }}</div>
+      <p class="muted small">{{ ticket.analysis.evidence_summary }}</p>
+    </div>
+
+    <div class="row" style="margin-top:16px">
+      <div class="card col">
+        <div class="muted small">Case type</div>
+        <div class="mono"><b>{{ ticket.analysis.case_type }}</b></div>
+      </div>
+      <div class="card col">
+        <div class="muted small">Severity</div>
+        <div><span class="badge sev-{{ ticket.analysis.severity }}">{{ ticket.analysis.severity }}</span></div>
+      </div>
+      <div class="card col">
+        <div class="muted small">Department</div>
+        <div class="mono">{{ ticket.analysis.department }}</div>
+      </div>
+      <div class="card col">
+        <div class="muted small">Confidence</div>
+        <div class="mono">{{ ticket.analysis.confidence|floatformat:2 }}</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3 style="margin-top:0">Agent summary</h3>
+      <p>{{ ticket.analysis.agent_summary }}</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3 style="margin-top:0">Recommended next action</h3>
+      <p>{{ ticket.analysis.recommended_next_action }}</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3 style="margin-top:0">Customer reply <span class="muted small">({{ ticket.language }})</span></h3>
+      <blockquote style="white-space:pre-wrap;margin:0">{{ ticket.analysis.customer_reply }}</blockquote>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3 style="margin-top:0">Reason codes</h3>
+      <ul class="pills">
+        {% for r in ticket.analysis.reason_codes %}
+          <li class="pill mono">{{ r }}</li>
+        {% empty %}
+          <li class="muted small">None.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    {% if ticket.analysis.human_review_required %}
+      <div class="card" style="margin-top:16px;border:1px solid #111;background:#fafafa">
+        <h3 style="margin-top:0">Human review required</h3>
+        <p class="muted small">This case meets the escalation criteria. A support agent should review before any customer-facing action.</p>
+      </div>
+    {% endif %}
+
+    <details class="card" style="margin-top:16px">
+      <summary><b>Raw analysis JSON</b></summary>
+      <pre class="mono small" style="white-space:pre-wrap;margin-top:8px">{{ ticket.analysis_json|default:"{}" }}</pre>
+    </details>
+  </div>
+</div>
+{% endblock %}
