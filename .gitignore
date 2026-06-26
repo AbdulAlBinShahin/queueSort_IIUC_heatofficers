@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+ENV/
+*.puku/
+
+# Django
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+.coverage
+htmlcov/
+
+# Env / secrets
+.env
+.env.local
+.env.production
+judging.env
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+
+# Spec / planning markdown — internal to the team, not part of the repo
+*.md
+!README.md
+!RUNBOOK.md
